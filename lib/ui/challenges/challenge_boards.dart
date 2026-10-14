@@ -18,14 +18,13 @@ class ChallengeBoards extends StatefulWidget {
 
 class _ChallengeBoardsState extends State<ChallengeBoards> {
   ChallengeCategory _category = ChallengeCategory.mixed;
-  SpeechMode _mode = SpeechMode.traditional;
   @override
   Widget build(BuildContext context) {
     final bests = widget.state.bests
         .where(
           (r) =>
               r.category == _category &&
-              r.mode == _mode &&
+              r.mode == SpeechMode.placeValue &&
               r.rules == ChallengeRound.rules &&
               r.total == 10,
         )
@@ -36,7 +35,7 @@ class _ChallengeBoardsState extends State<ChallengeBoards> {
         const PageIntro(
           eyebrow: 'Deine Disziplin. Dein Bestwert.',
           title: 'Ranglisten',
-          subtitle: 'Öffentliche Bestenlisten folgen mit dem Online-Spiel. Hier siehst du schon jetzt deine persönlichen Bestwerte auf diesem Gerät.',
+          subtitle: 'Bestwerte werden ausschließlich für die Zwanzigeins-Sprechweise geführt. Öffentliche Bestenlisten folgen mit dem Online-Spiel.',
         ),
         const SizedBox(height: 24),
         Wrap(
@@ -51,8 +50,6 @@ class _ChallengeBoardsState extends State<ChallengeBoards> {
               ),
           ],
         ),
-        const SizedBox(height: 18),
-        ModePicker(value: _mode, onChanged: (m) => setState(() => _mode = m)),
         const SizedBox(height: 14),
         ContentCard(
           child: Column(
@@ -75,7 +72,7 @@ class _ChallengeBoardsState extends State<ChallengeBoards> {
                   '${bests.single.correct} / ${bests.single.total} richtig',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
-                Text('${bests.single.timeLabel} · ${bests.single.mode.label}'),
+                Text('${bests.single.timeLabel} · Zwanzigeins'),
               ],
               const SizedBox(height: 12),
               const Text(
@@ -93,7 +90,6 @@ class _ChallengeBoardsState extends State<ChallengeBoards> {
                 speech: widget.speech,
                 category: _category,
                 duel: false,
-                initialMode: _mode,
               ),
             ),
           ),
@@ -174,20 +170,6 @@ class _ChallengeProfileState extends State<ChallengeProfile> {
         subtitle: 'Du spielst lokal ohne Konto. Online-Profil, Einladungen und öffentliche Ergebnisse folgen später.',
       ),
       const SizedBox(height: 24),
-      Text(
-        'Bevorzugte Sprechweise',
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      const SizedBox(height: 12),
-      IgnorePointer(
-        ignoring: _busy,
-        child: ModePicker(
-          value: widget.state.preferredMode,
-          onChanged: (m) => _change(() => widget.state.setMode(m)),
-        ),
-      ),
-      if (_busy) const LinearProgressIndicator(),
-      const SizedBox(height: 20),
       ActionCard(
         icon: Icons.route_rounded,
         title: 'Dein Lernfortschritt',

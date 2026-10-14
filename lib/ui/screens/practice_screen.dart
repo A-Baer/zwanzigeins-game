@@ -32,7 +32,7 @@ class PracticeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Card(
-            color: const Color(0xFFEEEBFA),
+            color: const Color(0xFFE7F8EE),
             child: ListTile(
               contentPadding: const EdgeInsets.all(18),
               leading: const Icon(Icons.tune_rounded, color: AppColors.violet),
@@ -106,7 +106,7 @@ class _PracticeCard extends StatelessWidget {
                 height: 62,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFDDF5EC),
+                  color: Color(0xFFE7F8EE),
                   shape: BoxShape.circle,
                 ),
                 child: Text(

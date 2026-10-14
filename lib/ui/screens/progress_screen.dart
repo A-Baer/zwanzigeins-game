@@ -84,7 +84,7 @@ class ProgressScreen extends StatelessWidget {
                     contentPadding: EdgeInsets.zero,
                     leading: CircleAvatar(
                       backgroundColor: complete
-                          ? const Color(0xFFDDF5EC)
+                          ? const Color(0xFFE7F8EE)
                           : AppColors.canvas,
                       child: Icon(
                         complete

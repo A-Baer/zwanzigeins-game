@@ -212,7 +212,7 @@ class _LessonScreenState extends State<LessonScreen> {
                                 height: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 3,
-                                  color: Colors.white,
+                                  color: AppColors.ink,
                                 ),
                               )
                             : Text(
@@ -261,7 +261,7 @@ class _ExerciseVisual extends StatelessWidget {
                   width: 116,
                   height: 116,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFDDF5EC),
+                    color: Color(0xFFE7F8EE),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -519,7 +519,7 @@ class _CompletionScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF2DB),
+                      color: const Color(0xFFE7F8EE),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(

@@ -39,6 +39,7 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
       _saved = false,
       _allowExit = false;
   String? _saveError;
+  String? _answer;
   bool get _duel => widget.modes.length == 2;
   SpeechMode get _mode => widget.modes[_player];
   ChallengeQuestion get _question => widget.round.questions[_index];
@@ -105,6 +106,7 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
     setState(() {
       _elapsed += _clock.elapsedMilliseconds;
       _right = answer == _question.answer(_mode);
+      _answer = answer;
       if (_right) _correct++;
       _checked = true;
     });
@@ -118,6 +120,7 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
         _checked = false;
         _fallback = false;
         _heard = false;
+        _answer = null;
         _selectedTokens.clear();
         _clock
           ..reset()
@@ -147,6 +150,7 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
         _fallback = false;
         _assisted = false;
         _heard = false;
+        _answer = null;
         _selectedTokens.clear();
         _phase = _Phase.handoff;
       });
@@ -215,10 +219,44 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
     },
     child: Scaffold(
       appBar: AppBar(
-        title: Text(
-          _duel ? 'Duell an einem Gerät' : widget.round.category.label,
+        leading: IconButton(
+          tooltip: 'Runde schließen',
+          onPressed: _saving
+              ? null
+              : () {
+                  if (_phase == _Phase.playing ||
+                      (_duel && _player == 1 && _phase == _Phase.handoff)) {
+                    _exit();
+                  } else {
+                    Navigator.of(context).maybePop();
+                  }
+                },
+          icon: const Icon(Icons.close_rounded),
         ),
-        backgroundColor: AppColors.canvas,
+        title: _phase == _Phase.playing
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: LinearProgressIndicator(
+                  value: (_index + 1) / widget.round.questions.length,
+                  minHeight: 10,
+                ),
+              )
+            : Text(
+                _duel ? 'Duell an einem Gerät' : widget.round.category.label,
+              ),
+        actions: _phase == _Phase.playing
+            ? [
+                Padding(
+                  padding: const EdgeInsets.only(right: 18),
+                  child: Center(
+                    child: Text(
+                      '${_index + 1}/${widget.round.questions.length}',
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ),
+              ]
+            : null,
       ),
       body: SafeArea(
         child: Center(
@@ -236,12 +274,22 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
   );
 
   Widget _handoff() => ListView(
-    padding: const EdgeInsets.all(24),
+    padding: const EdgeInsets.fromLTRB(22, 20, 22, 32),
     children: [
-      const Icon(
-        Icons.swap_horiz_rounded,
-        size: 70,
-        color: AppColors.darkGreen,
+      Center(
+        child: Container(
+          width: 84,
+          height: 84,
+          decoration: const BoxDecoration(
+            color: AppColors.ink,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            _duel ? Icons.swap_horiz_rounded : Icons.arrow_forward_rounded,
+            size: 46,
+            color: AppColors.green,
+          ),
+        ),
       ),
       const SizedBox(height: 24),
       PageIntro(
@@ -258,8 +306,22 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text(
+              'DEINE SPRECHWEISE',
+              style: TextStyle(
+                color: AppColors.darkGreen,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 8),
             Text(_mode.label, style: Theme.of(context).textTheme.titleLarge),
-            Text('21 → ${_mode.example}'),
+            const SizedBox(height: 4),
+            Text(
+              '21  →  ${_mode.example}',
+              style: const TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 12),
             const Text(
               'Die Zeit läuft nur während der Aufgaben, inklusive Anhören und Eingabe. Feedback und Übergabe zählen nicht.',
@@ -288,41 +350,100 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
         : <String>[];
     return ListView(
       key: ValueKey('$_player/$_index'),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(22, 14, 22, 28),
       children: [
-        Text(
-          '${_duel ? 'Spieler ${_player + 1} · ' : ''}${_mode.label}',
-          style: const TextStyle(
-            color: AppColors.darkGreen,
-            fontWeight: FontWeight.w700,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceGreen,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_duel ? 'Spieler ${_player + 1} · ' : ''}${_mode.label}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.darkGreen,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              q.category.label,
+              maxLines: 1,
+              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        LinearProgressIndicator(
-          value: (_index + 1) / widget.round.questions.length,
-          minHeight: 8,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Aufgabe ${_index + 1} von ${widget.round.questions.length} · ${q.category.label}',
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 28),
         Text(switch (q.category) {
           ChallengeCategory.listen => 'Welche Zahl hörst du?',
-          ChallengeCategory.build => 'Ordne die Bausteine.',
-          _ => 'Welches Zahlwort passt?',
+          ChallengeCategory.build => 'Bringe die Zahl in Leserichtung.',
+          ChallengeCategory.addition => 'Wie viel ist das?',
+          ChallengeCategory.match => 'Welches Zahlwort passt?',
+          ChallengeCategory.mixed => 'Welche Antwort passt?',
         }, style: Theme.of(context).textTheme.headlineMedium),
-        const SizedBox(height: 20),
+        const SizedBox(height: 8),
+        Text(switch (q.category) {
+          ChallengeCategory.listen => 'Höre genau hin und wähle die Ziffern.',
+          ChallengeCategory.build => 'Tippe die Bausteine nacheinander an.',
+          ChallengeCategory.addition => 'Addiere beide Zahlen im Kopf.',
+          _ => 'Wähle eine Antwort aus.',
+        }, style: Theme.of(context).textTheme.bodyMedium),
+        const SizedBox(height: 28),
         if (q.category == ChallengeCategory.listen) ...[
-          FilledButton.icon(
-            key: const Key('challenge-speak'),
-            onPressed: _checked || _speechPending ? null : _speak,
-            icon: const Icon(Icons.volume_up_rounded),
-            label: Text(
-              _speechPending ? 'Audio wird gestartet …' : 'Zahl anhören',
+          Center(
+            child: SizedBox(
+              width: 132,
+              height: 132,
+              child: FilledButton(
+                key: const Key('challenge-speak'),
+                onPressed: _checked || _speechPending ? null : _speak,
+                style: FilledButton.styleFrom(
+                  shape: const CircleBorder(),
+                  backgroundColor: _speechPending
+                      ? AppColors.darkGreen
+                      : AppColors.ink,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _speechPending
+                          ? Icons.graphic_eq_rounded
+                          : _heard
+                          ? Icons.replay_rounded
+                          : Icons.volume_up_rounded,
+                      color: AppColors.green,
+                      size: 42,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      _speechPending
+                          ? 'Läuft …'
+                          : _heard
+                          ? 'Nochmal'
+                          : 'Anhören',
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
+          const SizedBox(height: 8),
           TextButton(
             onPressed: _checked
                 ? null
@@ -333,25 +454,56 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
             child: const Text('Stattdessen lesen (ohne Bestwert)'),
           ),
           if (_fallback)
-            Text(
-              NumberWords.speakable(q.number, _mode),
-              key: const Key('challenge-fallback'),
-              style: Theme.of(context).textTheme.headlineSmall,
+            Center(
+              child: Container(
+                key: const Key('challenge-fallback'),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceGreen,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  NumberWords.speakable(q.number, _mode),
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ),
             ),
         ] else
           Center(
-            child: Text(
-              '${q.number}',
-              style: const TextStyle(
-                fontSize: 64,
-                fontWeight: FontWeight.w900,
-                color: AppColors.darkGreen,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 22),
+              decoration: BoxDecoration(
+                color: AppColors.ink,
+                borderRadius: BorderRadius.circular(26),
+              ),
+              child: Text(
+                q.category == ChallengeCategory.addition
+                    ? q.additionExpression
+                    : '${q.number}',
+                key: q.category == ChallengeCategory.addition
+                    ? const Key('addition-expression')
+                    : null,
+                style: TextStyle(
+                  fontSize: q.category == ChallengeCategory.addition ? 46 : 68,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
         const SizedBox(height: 20),
         if (q.category == ChallengeCategory.build) ...[
-          ContentCard(
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceGreen,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.green),
+            ),
             child: Text(
               _selectedTokens.isEmpty
                   ? 'Tippe die Bausteine in der richtigen Reihenfolge an.'
@@ -388,46 +540,81 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
             child: const Text('Prüfen'),
           ),
         ] else
-          ...q
-              .options(_mode)
-              .map(
-                (option) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: OutlinedButton(
-                    key: Key('challenge-answer-$option'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.all(18),
-                      alignment: Alignment.centerLeft,
-                    ),
-                    onPressed:
-                        _checked ||
-                            _speechPending ||
-                            (q.category == ChallengeCategory.listen &&
-                                !_heard &&
-                                !_fallback)
-                        ? null
-                        : () => _check(option),
-                    child: Text(option, style: const TextStyle(fontSize: 18)),
+          ...q.options(_mode).map((option) {
+            final correct = option == q.answer(_mode);
+            final selected = option == _answer;
+            final background = !_checked
+                ? Colors.white
+                : correct
+                ? AppColors.surfaceGreen
+                : selected
+                ? const Color(0xFFFFECEC)
+                : Colors.white;
+            final border = !_checked
+                ? AppColors.border
+                : correct
+                ? AppColors.success
+                : selected
+                ? AppColors.error
+                : AppColors.border;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: OutlinedButton(
+                key: Key('challenge-answer-$option'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(18),
+                  alignment: Alignment.centerLeft,
+                  backgroundColor: background,
+                  disabledBackgroundColor: background,
+                  disabledForegroundColor: AppColors.ink,
+                  side: BorderSide(
+                    color: border,
+                    width: selected || correct ? 2 : 1.4,
                   ),
                 ),
+                onPressed:
+                    _checked ||
+                        _speechPending ||
+                        (q.category == ChallengeCategory.listen &&
+                            !_heard &&
+                            !_fallback)
+                    ? null
+                    : () => _check(option),
+                child: Text(option, style: const TextStyle(fontSize: 18)),
               ),
+            );
+          }),
         if (_checked) ...[
           const SizedBox(height: 18),
-          ContentCard(
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: _right ? AppColors.surfaceGreen : const Color(0xFFFFECEC),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _right ? AppColors.success : AppColors.error,
+              ),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _right
-                      ? 'Richtig!'
-                      : 'Das war noch nicht die richtige Antwort.',
+                      ? 'Richtig – genau so!'
+                      : q.category == ChallengeCategory.addition
+                      ? 'Fast. Rechne beide Zahlen noch einmal zusammen.'
+                      : 'Fast. Schau dir die Richtung noch einmal an.',
                   style: TextStyle(
                     color: _right ? AppColors.success : AppColors.error,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text('${q.number} → ${_mode.word(q.number)}'),
+                Text(
+                  q.category == ChallengeCategory.addition
+                      ? '${q.additionExpression} = ${q.number}'
+                      : '${q.number} → ${_mode.word(q.number)}',
+                ),
               ],
             ),
           ),
@@ -457,12 +644,22 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
         ? 'Unentschieden!'
         : 'Spieler ${_results[0].compareScore(_results[1]) < 0 ? 1 : 2} gewinnt!';
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(22, 16, 22, 32),
       children: [
-        const Icon(
-          Icons.emoji_events_rounded,
-          color: AppColors.darkOrange,
-          size: 72,
+        Center(
+          child: Container(
+            width: 92,
+            height: 92,
+            decoration: const BoxDecoration(
+              color: AppColors.ink,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_forward_rounded,
+              color: AppColors.green,
+              size: 52,
+            ),
+          ),
         ),
         const SizedBox(height: 20),
         PageIntro(
@@ -482,16 +679,36 @@ class _ChallengeRoundScreenState extends State<ChallengeRoundScreen>
             padding: const EdgeInsets.only(bottom: 12),
             child: ContentCard(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
                     '${_duel ? 'Spieler ${i + 1} · ' : ''}${_results[i].mode.label}',
                   ),
+                  const SizedBox(height: 5),
                   Text(
                     '${_results[i].correct} / ${_results[i].total} richtig',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  Text('${_results[i].timeLabel} Antwortzeit'),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      MetricPill(
+                        icon: Icons.timer_outlined,
+                        value: _results[i].timeLabel,
+                        label: 'Antwortzeit',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: LinearProgressIndicator(
+                      minHeight: 10,
+                      value: _results[i].correct / _results[i].total,
+                    ),
+                  ),
                   if (!_results[i].eligible)
                     const Text('Training ohne Bestwert'),
                 ],

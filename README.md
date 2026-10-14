@@ -52,11 +52,11 @@ Systembrowser geöffnet.
 
 Der Einstieg ist jetzt `Challenges | Lernen | Ranglisten | Profil | Mehr`.
 
-- Zahlenmix mit zehn Aufgaben sowie Hörspur, Zahlwort-Zuordnung und Baustein-Ordnen
-- traditionelle oder stellenwertgerechte Sprechweise für jeden Versuch
-- zwei Spieler nacheinander an einem Gerät, gleicher Mix und unabhängige Moduswahl
-- lokale Einzelbestwerte je Kategorie/Modus und die letzten 50 Einzelversuche
-- bevorzugte Sprechweise und separates Löschen der Challenge-Ergebnisse im Profil
+- Zahlenmix mit zehn Aufgaben sowie Hörspur, Zahlwort-Zuordnung, Baustein-Ordnen und Addition
+- Einzelversuche und Disziplinen immer in der Zwanzigeins-Sprechweise
+- zwei Spieler nacheinander an einem Gerät: Spieler 1 traditionell, Spieler 2 mit Zwanzigeins
+- lokale Zwanzigeins-Bestwerte je Kategorie und die letzten 50 Einzelversuche
+- separates Löschen der Challenge-Ergebnisse im Profil
 - richtig vor schnell; Antwortzeit ohne Feedback/Übergaben; kein Zeitlimit
 - Texthilfe bei Hörfragen und App-Unterbrechungen zählen als Training ohne Bestwert
 

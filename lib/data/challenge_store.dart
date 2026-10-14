@@ -9,7 +9,7 @@ class ChallengeSnapshot {
   const ChallengeSnapshot({
     this.results = const [],
     this.bests = const [],
-    this.preferredMode = SpeechMode.traditional,
+    this.preferredMode = SpeechMode.placeValue,
   });
   final List<ChallengeResult> results;
   final List<ChallengeResult> bests;

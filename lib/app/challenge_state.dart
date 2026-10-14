@@ -13,7 +13,9 @@ class ChallengeState extends ChangeNotifier {
       ChallengeState._(store, await store.load());
   SpeechMode get preferredMode => _snapshot.preferredMode;
   List<ChallengeResult> get results => List.unmodifiable(_snapshot.results);
-  List<ChallengeResult> get bests => List.unmodifiable(_snapshot.bests);
+  List<ChallengeResult> get bests => List.unmodifiable(
+    _snapshot.bests.where((result) => result.mode == SpeechMode.placeValue),
+  );
 
   // Serialize read-modify-write operations; publish only after durable save.
   Future<void> _update(ChallengeSnapshot Function() create) {
@@ -40,7 +42,7 @@ class ChallengeState extends ChangeNotifier {
       return _snapshot;
     }
     final updated = [...bests];
-    if (result.eligible) {
+    if (result.eligible && result.mode == SpeechMode.placeValue) {
       final index = updated.indexWhere((r) => r.boardKey == result.boardKey);
       if (index == -1) {
         updated.add(result);

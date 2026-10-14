@@ -8,58 +8,6 @@ import '../../services/speech_service.dart';
 import '../widgets/common.dart';
 import 'challenge_round_screen.dart';
 
-class ModePicker extends StatelessWidget {
-  const ModePicker({super.key, required this.value, required this.onChanged});
-  final SpeechMode value;
-  final ValueChanged<SpeechMode> onChanged;
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      for (final mode in [SpeechMode.traditional, SpeechMode.placeValue])
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Semantics(
-            selected: value == mode,
-            child: OutlinedButton(
-              onPressed: () => onChanged(mode),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                backgroundColor: value == mode
-                    ? const Color(0xFFE8F3DD)
-                    : Colors.white,
-                side: BorderSide(
-                  color: value == mode ? AppColors.darkGreen : AppColors.border,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    value == mode
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_off,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          mode.label,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
-                        ),
-                        Text(mode.example),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-    ],
-  );
-}
-
 void openChallenge(
   BuildContext context,
   ChallengeState state,
@@ -86,20 +34,16 @@ class ChallengeSetupScreen extends StatefulWidget {
     required this.speech,
     required this.category,
     required this.duel,
-    this.initialMode,
   });
   final ChallengeState state;
   final SpeechService speech;
   final ChallengeCategory category;
   final bool duel;
-  final SpeechMode? initialMode;
   @override
   State<ChallengeSetupScreen> createState() => _ChallengeSetupScreenState();
 }
 
 class _ChallengeSetupScreenState extends State<ChallengeSetupScreen> {
-  late SpeechMode _first = widget.initialMode ?? widget.state.preferredMode;
-  SpeechMode _second = SpeechMode.placeValue;
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -119,31 +63,29 @@ class _ChallengeSetupScreenState extends State<ChallengeSetupScreen> {
                     : 'Persönliche Bestwerte',
                 title: 'Deine Zahl. Deine Richtung.',
                 subtitle: widget.duel
-                    ? 'Jede Person wählt ihre eigene Sprechweise. Ihr bekommt denselben zufälligen Aufgabenmix.'
-                    : 'Wähle deine Sprechweise. Deine Bestwerte werden für beide Modi getrennt gespeichert.',
+                    ? 'Spieler 1 nutzt die traditionelle, Spieler 2 die Zwanzigeins-Sprechweise. Beide bekommen denselben Aufgabenmix.'
+                    : 'Alle Disziplinen werden in der Zwanzigeins-Sprechweise gespielt.',
               ),
               const SizedBox(height: 24),
-              Text(
-                widget.duel ? 'Spieler 1' : 'Sprechweise',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 12),
-              ModePicker(
-                value: _first,
-                onChanged: (m) => setState(() => _first = m),
-              ),
-              if (widget.duel) ...[
-                const SizedBox(height: 16),
-                Text(
-                  'Spieler 2',
-                  style: Theme.of(context).textTheme.titleLarge,
+              if (widget.duel)
+                const Column(
+                  children: [
+                    _FixedModeCard(
+                      player: 'Spieler 1',
+                      mode: SpeechMode.traditional,
+                    ),
+                    SizedBox(height: 12),
+                    _FixedModeCard(
+                      player: 'Spieler 2',
+                      mode: SpeechMode.placeValue,
+                    ),
+                  ],
+                )
+              else
+                const _FixedModeCard(
+                  player: 'Sprechweise',
+                  mode: SpeechMode.placeValue,
                 ),
-                const SizedBox(height: 12),
-                ModePicker(
-                  value: _second,
-                  onChanged: (m) => setState(() => _second = m),
-                ),
-              ],
               const SizedBox(height: 16),
               const Text(
                 '10 Aufgaben · Zahlen 11–99\nBausteine: 21–99 ohne volle Zehner. Richtig vor schnell. Kein Zeitlimit.',
@@ -160,7 +102,12 @@ class _ChallengeSetupScreenState extends State<ChallengeSetupScreen> {
                       MaterialPageRoute(
                         builder: (_) => ChallengeRoundScreen(
                           round: ChallengeFactory().create(widget.category),
-                          modes: [_first, if (widget.duel) _second],
+                          modes: widget.duel
+                              ? const [
+                                  SpeechMode.traditional,
+                                  SpeechMode.placeValue,
+                                ]
+                              : const [SpeechMode.placeValue],
                           state: widget.state,
                           speechService: widget.speech,
                         ),
@@ -179,6 +126,34 @@ class _ChallengeSetupScreenState extends State<ChallengeSetupScreen> {
   );
 }
 
+class _FixedModeCard extends StatelessWidget {
+  const _FixedModeCard({required this.player, required this.mode});
+
+  final String player;
+  final SpeechMode mode;
+
+  @override
+  Widget build(BuildContext context) => ContentCard(
+    child: Row(
+      children: [
+        const Icon(Icons.lock_rounded, color: AppColors.darkGreen),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(player, style: Theme.of(context).textTheme.labelLarge),
+              const SizedBox(height: 3),
+              Text(mode.label, style: Theme.of(context).textTheme.titleLarge),
+              Text('21 → ${mode.example}'),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class ChallengeHub extends StatelessWidget {
   const ChallengeHub({
     super.key,
@@ -191,142 +166,249 @@ class ChallengeHub extends StatelessWidget {
   final SpeechService speech;
   final VoidCallback onLearn, onBoards;
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(24),
-    children: [
-      Row(
-        children: [
-          const BrandLogo(),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'zwanzigeins',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+  Widget build(BuildContext context) {
+    final lastResult = state.results.firstOrNull;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 36),
+      children: [
+        const BrandHeader(trailing: Chip(label: Text('Lokal'))),
+        const SizedBox(height: 22),
+        Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: AppColors.ink,
+            borderRadius: BorderRadius.circular(28),
           ),
-          const Chip(label: Text('Lokal')),
-        ],
-      ),
-      const SizedBox(height: 24),
-      Container(
-        padding: const EdgeInsets.all(26),
-        decoration: BoxDecoration(
-          color: const Color(0xFF203D31),
-          borderRadius: BorderRadius.circular(30),
+          child: Stack(
+            children: [
+              const Positioned(
+                right: -24,
+                top: -34,
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Color(0x222DCE78),
+                  size: 190,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final copy = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'DEINE RUNDE FÜR HEUTE',
+                          style: TextStyle(
+                            color: AppColors.green,
+                            letterSpacing: 1.35,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Zahlen hören.\nRichtung erkennen.',
+                          style: Theme.of(context).textTheme.displaySmall
+                              ?.copyWith(color: Colors.white),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Ein schneller Mix aus Hörspur, Zahlwort, Bausteinen und Kopfrechnen.',
+                          style: TextStyle(
+                            color: Color(0xFFC8D0CC),
+                            fontSize: 16,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton.icon(
+                          key: const Key('start-mixed'),
+                          onPressed: () => openChallenge(
+                            context,
+                            state,
+                            speech,
+                            ChallengeCategory.mixed,
+                          ),
+                          icon: const Icon(Icons.play_arrow_rounded),
+                          label: const Text('Zahlenmix starten'),
+                        ),
+                        const SizedBox(height: 14),
+                        const Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            MetricPill(
+                              icon: Icons.grid_view_rounded,
+                              value: '10',
+                              label: 'Aufgaben',
+                              inverted: true,
+                            ),
+                            MetricPill(
+                              icon: Icons.timer_outlined,
+                              value: 'ca. 2',
+                              label: 'Minuten',
+                              inverted: true,
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                    if (constraints.maxWidth < 650) return copy;
+                    return Row(
+                      children: [
+                        Expanded(flex: 3, child: copy),
+                        const SizedBox(width: 28),
+                        const Expanded(flex: 2, child: _DirectionVisual()),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
           children: [
-            const Text(
-              'DEIN KOPF. DEINE RICHTUNG.',
-              style: TextStyle(
-                color: Color(0xFFBCED86),
-                letterSpacing: 1.2,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
+            MetricPill(
+              icon: Icons.sports_score_rounded,
+              value: '${state.results.length}',
+              label: 'Runden',
+            ),
+            MetricPill(
+              icon: Icons.workspace_premium_outlined,
+              value: '${state.bests.length}',
+              label: 'Bestwerte',
+            ),
+            if (lastResult != null)
+              MetricPill(
+                icon: Icons.check_circle_outline_rounded,
+                value: '${lastResult.correct}/${lastResult.total}',
+                label: 'zuletzt',
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Wie gut ist dein\nZahlengefühl?',
-              style: Theme.of(context).textTheme.displaySmall
-                  ?.copyWith(color: Colors.white),
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              'Hören, finden, zusammensetzen. Spiele den Zahlenmix in deiner Sprechweise.',
-              style: TextStyle(
-                color: Color(0xFFDAE8DF),
-                fontSize: 17,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 22),
-            ElevatedButton.icon(
-              key: const Key('start-mixed'),
-              onPressed: () => openChallenge(
-                context,
-                state,
-                speech,
-                ChallengeCategory.mixed,
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBCED86),
-                foregroundColor: const Color(0xFF203D31),
-              ),
-              icon: const Icon(Icons.bolt_rounded),
-              label: const Text('Zahlenmix spielen'),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              '10 Aufgaben · persönlicher Versuch',
-              style: TextStyle(color: Color(0xFFDAE8DF)),
-            ),
           ],
         ),
-      ),
-      const SizedBox(height: 22),
-      ActionCard(
-        icon: Icons.people_alt_rounded,
-        title: 'Fordert euch heraus',
-        text: 'Zwei Personen, ein Gerät. Gleiche Aufgaben, freie Sprechweise.',
-        action: 'Lokales Duell starten',
-        onTap: () => openChallenge(
-          context,
-          state,
-          speech,
-          ChallengeCategory.mixed,
-          duel: true,
-        ),
-      ),
-      const SizedBox(height: 14),
-      const ContentCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Online-Duelle kommen als Nächstes',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Freunde einladen und zufällige Gegner finden ist noch nicht verfügbar. Bis dahin könnt ihr an einem Gerät gegeneinander spielen.',
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 26),
-      Text(
-        'Finde deine Disziplin',
-        style: Theme.of(context).textTheme.headlineSmall,
-      ),
-      const SizedBox(height: 12),
-      for (final category in ChallengeCategory.values.where(
-        (c) => c != ChallengeCategory.mixed,
-      )) ...[
-        ActionCard(
-          icon: categoryIcon(category),
-          title: category.label,
-          text: category.description,
-          action: 'Kategorie trainieren',
-          onTap: () => openChallenge(context, state, speech, category),
+        const SizedBox(height: 30),
+        Text(
+          'Gemeinsam spielen',
+          key: const Key('shared-play-heading'),
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 12),
+        ActionCard(
+          icon: Icons.people_alt_rounded,
+          title: 'Duell an einem Gerät',
+          text: 'Spieler 1 spricht traditionell, Spieler 2 spielt mit Zwanzigeins. Beide lösen dieselben Aufgaben.',
+          action: 'Duell vorbereiten',
+          dark: true,
+          onTap: () => openChallenge(
+            context,
+            state,
+            speech,
+            ChallengeCategory.mixed,
+            duel: true,
+          ),
+        ),
+        const SizedBox(height: 28),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Wähle deine Disziplin',
+                key: const Key('discipline-heading'),
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+            TextButton(onPressed: onBoards, child: const Text('Bestwerte')),
+          ],
+        ),
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final gap = 12.0;
+            final columns = constraints.maxWidth >= 760 ? 3 : 1;
+            final width =
+                (constraints.maxWidth - gap * (columns - 1)) / columns;
+            return Wrap(
+              spacing: gap,
+              runSpacing: gap,
+              children: [
+                for (final category in ChallengeCategory.values.where(
+                  (c) => c != ChallengeCategory.mixed,
+                ))
+                  SizedBox(
+                    width: width,
+                    child: ActionCard(
+                      icon: categoryIcon(category),
+                      title: category.label,
+                      text: category.description,
+                      action: 'Trainieren',
+                      onTap: () =>
+                          openChallenge(context, state, speech, category),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        ActionCard(
+          icon: Icons.route_rounded,
+          title: 'Lieber erst verstehen?',
+          text: 'Folge dem Lernweg oder vergleiche beide Sprechweisen im Zahlenlabor.',
+          action: 'Zum Lernbereich',
+          onTap: onLearn,
+        ),
+        const SizedBox(height: 18),
+        const Text(
+          'Online-Duelle und öffentliche Ranglisten sind noch nicht verfügbar.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppColors.muted, fontSize: 12),
+        ),
       ],
-      TextButton.icon(
-        onPressed: onBoards,
-        icon: const Icon(Icons.leaderboard_rounded),
-        label: const Text('Meine Bestwerte ansehen'),
-      ),
-      const SizedBox(height: 12),
-      ActionCard(
-        icon: Icons.route_rounded,
-        title: 'Zahlen verstehen. In deinem Tempo.',
-        text: 'Entdecke beide Sprechweisen im Zahlenlabor oder folge deinem Lernweg.',
-        action: 'Zum Lernbereich',
-        onTap: onLearn,
-      ),
-    ],
+    );
+  }
+}
+
+class _DirectionVisual extends StatelessWidget {
+  const _DirectionVisual();
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: '21 wird von links nach rechts gelesen',
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          '21',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 96,
+            height: .9,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 12,
+          decoration: BoxDecoration(
+            color: AppColors.green,
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        const Align(
+          alignment: Alignment.centerRight,
+          child: Icon(
+            Icons.arrow_forward_rounded,
+            color: AppColors.green,
+            size: 46,
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -335,6 +417,7 @@ IconData categoryIcon(ChallengeCategory category) => switch (category) {
   ChallengeCategory.listen => Icons.headphones_rounded,
   ChallengeCategory.match => Icons.find_in_page_rounded,
   ChallengeCategory.build => Icons.extension_rounded,
+  ChallengeCategory.addition => Icons.calculate_rounded,
 };
 
 class ActionCard extends StatelessWidget {
@@ -345,40 +428,63 @@ class ActionCard extends StatelessWidget {
     required this.text,
     required this.action,
     required this.onTap,
+    this.dark = false,
   });
   final IconData icon;
   final String title, text, action;
   final VoidCallback onTap;
+  final bool dark;
   @override
   Widget build(BuildContext context) => Card(
+    color: dark ? AppColors.ink : Colors.white,
     child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(22),
       child: Padding(
-        padding: const EdgeInsets.all(22),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: AppColors.darkGreen, size: 28),
-            const SizedBox(height: 12),
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: dark ? AppColors.green : AppColors.surfaceGreen,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Icon(
+                icon,
+                color: dark ? AppColors.ink : AppColors.darkGreen,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge
+                  ?.copyWith(color: dark ? Colors.white : AppColors.ink),
+            ),
             const SizedBox(height: 6),
-            Text(text),
+            Text(
+              text,
+              style: TextStyle(
+                color: dark ? const Color(0xFFC8D0CC) : AppColors.muted,
+              ),
+            ),
             const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
                   child: Text(
                     action,
-                    style: const TextStyle(
-                      color: AppColors.darkGreen,
+                    style: TextStyle(
+                      color: dark ? AppColors.green : AppColors.darkGreen,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_rounded,
-                  color: AppColors.darkGreen,
+                  color: dark ? AppColors.green : AppColors.darkGreen,
                 ),
               ],
             ),

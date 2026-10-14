@@ -72,7 +72,7 @@ Future<void> solve(
 }
 
 void main() {
-  testWidgets('complete mixed round saves local result in chosen mode', (
+  testWidgets('complete mixed round saves a Zwanzigeins result', (
     tester,
   ) async {
     final state = await ChallengeState.load(MemoryChallengeStore());
@@ -83,43 +83,42 @@ void main() {
         theme: AppTheme.light(),
         home: ChallengeRoundScreen(
           round: round,
-          modes: const [SpeechMode.traditional],
+          modes: const [SpeechMode.placeValue],
+          state: state,
+          speechService: FakeSpeechService(),
+        ),
+      ),
+    );
+    await solve(tester, round, SpeechMode.placeValue);
+    expect(find.text('Runde geschafft!'), findsOneWidget);
+    expect(state.results.single.correct, 10);
+    expect(state.bests.single.mode, SpeechMode.placeValue);
+  });
+  testWidgets('duel uses fixed speech roles and creates no personal record', (
+    tester,
+  ) async {
+    final state = await ChallengeState.load(MemoryChallengeStore());
+    final round = ChallengeFactory(random: Random(2))
+        .create(ChallengeCategory.mixed);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: ChallengeRoundScreen(
+          round: round,
+          modes: const [SpeechMode.traditional, SpeechMode.placeValue],
           state: state,
           speechService: FakeSpeechService(),
         ),
       ),
     );
     await solve(tester, round, SpeechMode.traditional);
-    expect(find.text('Runde geschafft!'), findsOneWidget);
-    expect(state.results.single.correct, 10);
-    expect(state.bests.single.mode, SpeechMode.traditional);
+    expect(find.text('Spieler 2, bist du bereit?'), findsOneWidget);
+    expect(find.text('10 / 10 richtig'), findsNothing);
+    await solve(tester, round, SpeechMode.placeValue);
+    expect(find.text('10 / 10 richtig'), findsNWidgets(2));
+    expect(state.results, isEmpty);
+    expect(state.bests, isEmpty);
   });
-  testWidgets(
-    'duel hands off same questions with independent modes and no personal record',
-    (tester) async {
-      final state = await ChallengeState.load(MemoryChallengeStore());
-      final round = ChallengeFactory(random: Random(2))
-          .create(ChallengeCategory.mixed);
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.light(),
-          home: ChallengeRoundScreen(
-            round: round,
-            modes: const [SpeechMode.traditional, SpeechMode.placeValue],
-            state: state,
-            speechService: FakeSpeechService(),
-          ),
-        ),
-      );
-      await solve(tester, round, SpeechMode.traditional);
-      expect(find.text('Spieler 2, bist du bereit?'), findsOneWidget);
-      expect(find.text('10 / 10 richtig'), findsNothing);
-      await solve(tester, round, SpeechMode.placeValue);
-      expect(find.text('10 / 10 richtig'), findsNWidgets(2));
-      expect(state.results, isEmpty);
-      expect(state.bests, isEmpty);
-    },
-  );
   testWidgets('audio fallback completes as practice without best', (
     tester,
   ) async {
@@ -150,7 +149,7 @@ void main() {
         theme: AppTheme.light(),
         home: ChallengeRoundScreen(
           round: round,
-          modes: const [SpeechMode.traditional],
+          modes: const [SpeechMode.placeValue],
           state: state,
           speechService: FakeSpeechService(),
         ),
@@ -162,11 +161,105 @@ void main() {
     for (final q in round.questions) {
       await tap(
         tester,
-        find.byKey(Key('challenge-answer-${q.answer(SpeechMode.traditional)}')),
+        find.byKey(Key('challenge-answer-${q.answer(SpeechMode.placeValue)}')),
       );
       await tap(tester, find.byKey(const Key('challenge-next')));
     }
     expect(state.results.single.eligible, isFalse);
+  });
+  testWidgets('addition round shows equations and can be completed', (
+    tester,
+  ) async {
+    final state = await ChallengeState.load(MemoryChallengeStore());
+    final round = ChallengeFactory(random: Random(8))
+        .create(ChallengeCategory.addition);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: ChallengeRoundScreen(
+          round: round,
+          modes: const [SpeechMode.placeValue],
+          state: state,
+          speechService: FakeSpeechService(),
+        ),
+      ),
+    );
+
+    await tap(tester, find.byKey(const Key('begin-challenge')));
+    expect(find.byKey(const Key('addition-expression')), findsOneWidget);
+    expect(find.text(round.questions.first.additionExpression), findsOneWidget);
+    for (var index = 0; index < round.questions.length; index++) {
+      final q = round.questions[index];
+      final answer = index == 0
+          ? q
+                .options(SpeechMode.placeValue)
+                .firstWhere(
+                  (option) => option != q.answer(SpeechMode.placeValue),
+                )
+          : q.answer(SpeechMode.placeValue);
+      await tap(tester, find.byKey(Key('challenge-answer-$answer')));
+      if (index == 0) {
+        expect(
+          find.text('Fast. Rechne beide Zahlen noch einmal zusammen.'),
+          findsOneWidget,
+        );
+      }
+      await tap(tester, find.byKey(const Key('challenge-next')));
+    }
+    expect(state.results.single.category, ChallengeCategory.addition);
+    expect(state.results.single.correct, 9);
+  });
+  testWidgets(
+    'challenge rules are fixed and shared play precedes disciplines',
+    (tester) async {
+      tester.view.physicalSize = const Size(1300, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ZwanzigeinsApp(
+          progressStore: MemoryProgressStore(),
+          challengeStore: MemoryChallengeStore(),
+          speechService: FakeSpeechService(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final shared = find.byKey(const Key('shared-play-heading'));
+      final disciplines = find.byKey(const Key('discipline-heading'));
+      expect(
+        tester.getTopLeft(shared).dy,
+        lessThan(tester.getTopLeft(disciplines).dy),
+      );
+      expect(find.text('Kopfrechnen'), findsOneWidget);
+
+      await tap(tester, find.text('Duell vorbereiten'));
+      expect(find.text('Spieler 1'), findsOneWidget);
+      expect(find.text('Traditionell'), findsOneWidget);
+      expect(find.text('Spieler 2'), findsOneWidget);
+      expect(find.text('Zwanzigeins'), findsOneWidget);
+      expect(find.byType(ChoiceChip), findsNothing);
+    },
+  );
+
+  testWidgets('rankings and profile offer no speech-mode selection', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ZwanzigeinsApp(
+        progressStore: MemoryProgressStore(),
+        challengeStore: MemoryChallengeStore(),
+        speechService: FakeSpeechService(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tap(tester, find.text('Ranglisten'));
+    expect(find.textContaining('ausschließlich'), findsOneWidget);
+    expect(find.text('Traditionell'), findsNothing);
+
+    await tap(tester, find.text('Profil'));
+    expect(find.text('Bevorzugte Sprechweise'), findsNothing);
   });
   for (final size in [
     const Size(320, 700),

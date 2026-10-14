@@ -218,7 +218,7 @@ class _HistoryItem extends StatelessWidget {
               ),
             ),
             if (!last)
-              Container(width: 2, height: 58, color: const Color(0xFFDDF5EC)),
+              Container(width: 2, height: 58, color: const Color(0xFFE7F8EE)),
           ],
         ),
         const SizedBox(width: 14),

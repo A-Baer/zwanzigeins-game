@@ -48,12 +48,14 @@ abgestimmte Endpunkte. API-Version und fachliche Regelversion sind getrennt.
 
 ## Payload-Grenzen
 
-Versuchserstellung enthält Kategorie (mixed/listen/match/build), Modus
-(traditional/placeValue), ruleSetId und bei Duellen die berechtigte Teilnahme.
-Der Server bestimmt die Aufgaben. Moduswechsel nach dem Start ist ausgeschlossen.
+Versuchserstellung enthält Kategorie (mixed/listen/match/build/addition), ruleSetId
+und bei Duellen die berechtigte Teilnahme. Gewertete Einzelversuche verwenden
+immer `placeValue`; bei Duellen ist Spieler 1 serverseitig `traditional` und
+Spieler 2 `placeValue` zugeordnet. Der Server bestimmt Aufgaben und Rollen.
+Ein Moduswechsel ist nicht vorgesehen.
 
 Ausgegebene Aufgabe: opake questionId, Sequenznummer, Abfrageart, Eingabeform,
-freigegebener Anzeigetext/Ziffern oder signierte Audio-Referenz, Antwortoptionen
+freigegebener Anzeigetext/Ziffern, Additionsoperanden oder signierte Audio-Referenz, Antwortoptionen
 mit opaken IDs, gegebenenfalls Baustein-IDs, Server-Zeitfenster. Bei Hörfragen darf
 weder die Zahl noch ihr Text in URL, Dateiname, Metadaten oder Payload verraten
 werden. Keine Antworten, Seeds oder künftigen Aufgaben im Client-Payload.

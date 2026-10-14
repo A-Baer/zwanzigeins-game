@@ -2,7 +2,7 @@ import 'dart:math';
 
 import '../number_words.dart';
 
-enum ChallengeCategory { mixed, listen, match, build }
+enum ChallengeCategory { mixed, listen, match, build, addition }
 
 extension CategoryLabel on ChallengeCategory {
   String get label => switch (this) {
@@ -10,21 +10,23 @@ extension CategoryLabel on ChallengeCategory {
     ChallengeCategory.listen => 'Hörspur',
     ChallengeCategory.match => 'Zahlwort finden',
     ChallengeCategory.build => 'Bausteine ordnen',
+    ChallengeCategory.addition => 'Kopfrechnen',
   };
   String get description => switch (this) {
     ChallengeCategory.mixed =>
-      'Zehn Aufgaben. Drei Spielarten. Dein Zahlengefühl zählt.',
+      'Zehn Aufgaben. Vier Spielarten. Dein Zahlengefühl zählt.',
     ChallengeCategory.listen =>
       'Höre die Zahl und wähle die richtigen Ziffern.',
     ChallengeCategory.match => 'Finde zu den Ziffern das passende Zahlwort.',
     ChallengeCategory.build =>
       'Setze die Wortbausteine in die richtige Reihenfolge.',
+    ChallengeCategory.addition => 'Addiere zwei Zahlen im Kopf.',
   };
 }
 
 extension ModeLabel on SpeechMode {
   String get label =>
-      this == SpeechMode.traditional ? 'Traditionell' : 'Links nach rechts';
+      this == SpeechMode.traditional ? 'Traditionell' : 'Zwanzigeins';
   String get example =>
       this == SpeechMode.traditional ? 'einundzwanzig' : 'zwanzigeins';
   String word(int number) => this == SpeechMode.traditional
@@ -39,16 +41,34 @@ class ChallengeQuestion {
     required this.category,
     required List<int> choices,
     required this.shuffleSeed,
-  }) : choices = List.unmodifiable(choices);
+    this.leftOperand,
+  }) : assert(
+         category != ChallengeCategory.addition || leftOperand != null,
+         'Addition questions require a left operand.',
+       ),
+       choices = List.unmodifiable(choices);
   final int number;
   final ChallengeCategory category;
   final List<int> choices;
   final int shuffleSeed;
+  final int? leftOperand;
+
+  int get rightOperand => number - leftOperand!;
+  String get additionExpression => '$leftOperand + $rightOperand';
 
   String answer(SpeechMode mode) =>
-      category == ChallengeCategory.listen ? '$number' : mode.word(number);
+      category == ChallengeCategory.listen ||
+          category == ChallengeCategory.addition
+      ? '$number'
+      : mode.word(number);
   List<String> options(SpeechMode mode) => choices
-      .map((n) => category == ChallengeCategory.listen ? '$n' : mode.word(n))
+      .map(
+        (n) =>
+            category == ChallengeCategory.listen ||
+                category == ChallengeCategory.addition
+            ? '$n'
+            : mode.word(n),
+      )
       .toList();
   List<String> tokens(SpeechMode mode) {
     final direct = NumberWords.placeValueParts(number);
@@ -86,7 +106,8 @@ class ChallengeFactory {
               ChallengeCategory.listen,
               ChallengeCategory.match,
               ChallengeCategory.build,
-            ][i % 3]
+              ChallengeCategory.addition,
+            ][i % 4]
           : category,
     )..shuffle(random);
     final questions = kinds.map((kind) {
@@ -102,6 +123,9 @@ class ChallengeFactory {
         category: kind,
         choices: choices,
         shuffleSeed: random.nextInt(1 << 30),
+        leftOperand: kind == ChallengeCategory.addition
+            ? 1 + random.nextInt(number - 1)
+            : null,
       );
     }).toList();
     return ChallengeRound(

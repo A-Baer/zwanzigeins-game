@@ -51,24 +51,12 @@ class TodayScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              const BrandLogo(),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'zwanzigeins',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-              EnergyBadge(value: appState.clarityEnergy),
-            ],
-          ),
+          BrandHeader(trailing: EnergyBadge(value: appState.clarityEnergy)),
           const SizedBox(height: 28),
           Container(
             padding: const EdgeInsets.all(26),
             decoration: BoxDecoration(
-              color: const Color(0xFF203D31),
+              color: AppColors.ink,
               borderRadius: BorderRadius.circular(30),
             ),
             child: LayoutBuilder(
@@ -79,7 +67,7 @@ class TodayScreen extends StatelessWidget {
                     const Text(
                       'KLEINE SCHRITTE. KLARE ZAHLEN.',
                       style: TextStyle(
-                        color: Color(0xFFAEE7C4),
+                        color: AppColors.green,
                         fontSize: 11,
                         letterSpacing: 1.4,
                         fontWeight: FontWeight.w800,
@@ -95,7 +83,7 @@ class TodayScreen extends StatelessWidget {
                     const Text(
                       'Erst die Zehner. Dann die Einer.\nEntdecke Zahlen in Leserichtung.',
                       style: TextStyle(
-                        color: Color(0xFFDAE8DF),
+                        color: Color(0xFFC8D0CC),
                         fontSize: 16,
                         height: 1.5,
                       ),
@@ -105,8 +93,8 @@ class TodayScreen extends StatelessWidget {
                       key: const Key('continue-button'),
                       onPressed: start,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFBCED86),
-                        foregroundColor: const Color(0xFF203D31),
+                        backgroundColor: AppColors.green,
+                        foregroundColor: AppColors.ink,
                       ),
                       icon: const Icon(Icons.play_arrow_rounded),
                       label: Text(
@@ -118,7 +106,7 @@ class TodayScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     const Text(
                       '7 Aufgaben · in deinem Tempo',
-                      style: TextStyle(color: Color(0xFFDAE8DF), fontSize: 12),
+                      style: TextStyle(color: Color(0xFFC8D0CC), fontSize: 12),
                     ),
                   ],
                 );
@@ -178,7 +166,7 @@ class TodayScreen extends StatelessWidget {
                       height: 54,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE8F3DD),
+                        color: AppColors.surfaceGreen,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
@@ -258,7 +246,7 @@ class TodayScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Card(
-            color: const Color(0xFFEEEBFA),
+            color: AppColors.surfaceGreen,
             child: InkWell(
               key: const Key('open-number-lab'),
               borderRadius: BorderRadius.circular(24),
@@ -316,8 +304,8 @@ class _NumberPicture extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           for (final (digit, label, color) in [
-            ('2', 'ZEHNER', const Color(0xFFBCED86)),
-            ('1', 'EINER', const Color(0xFFF6D18B)),
+            ('2', 'ZEHNER', AppColors.green),
+            ('1', 'EINER', AppColors.lime),
           ])
             Flexible(
               child: Container(
@@ -338,14 +326,14 @@ class _NumberPicture extends StatelessWidget {
                         fontSize: 76,
                         height: 1,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF203D31),
+                        color: AppColors.ink,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Text(
                       label,
                       style: const TextStyle(
-                        color: Color(0xFF203D31),
+                        color: AppColors.ink,
                         fontSize: 11,
                         letterSpacing: 1,
                         fontWeight: FontWeight.w800,

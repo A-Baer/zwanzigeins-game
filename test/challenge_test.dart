@@ -11,7 +11,7 @@ ChallengeResult result(
   String id, {
   int correct = 8,
   int ms = 2000,
-  SpeechMode mode = SpeechMode.traditional,
+  SpeechMode mode = SpeechMode.placeValue,
   ChallengeCategory category = ChallengeCategory.match,
   bool eligible = true,
 }) => ChallengeResult(
@@ -26,64 +26,68 @@ ChallengeResult result(
 );
 
 void main() {
-  test(
-    'all categories have ten solvable tasks in both modes over many seeds',
-    () {
-      for (var seed = 0; seed < 100; seed++) {
-        for (final category in ChallengeCategory.values) {
-          final round = ChallengeFactory(random: Random(seed)).create(category);
-          expect(round.questions.length, 10);
-          if (category == ChallengeCategory.mixed) {
-            expect(round.questions.map((q) => q.category).toSet().length, 3);
-          }
-          for (final q in round.questions) {
-            expect(q.number, inInclusiveRange(11, 99));
-            for (final mode in SpeechMode.values) {
-              expect(q.options(mode).toSet().length, 4);
-              expect(q.options(mode), contains(q.answer(mode)));
-              if (q.category == ChallengeCategory.build) {
-                final tokens = q.tokens(mode);
-                final expected = mode == SpeechMode.placeValue
-                    ? NumberWords.placeValueParts(q.number)
-                    : [
-                        q.number % 10 == 1
-                            ? 'ein'
-                            : NumberWords.traditional(q.number % 10),
-                        'und',
-                        NumberWords.traditional(q.number ~/ 10 * 10),
-                      ];
-                expect(tokens.toSet(), expected.toSet());
-                expect(expected.join(), q.answer(mode));
-                expect(q.tokens(mode), tokens);
-              }
+  test('all categories have ten solvable tasks over many seeds', () {
+    for (var seed = 0; seed < 100; seed++) {
+      for (final category in ChallengeCategory.values) {
+        final round = ChallengeFactory(random: Random(seed)).create(category);
+        expect(round.questions.length, 10);
+        if (category == ChallengeCategory.mixed) {
+          expect(round.questions.map((q) => q.category).toSet().length, 4);
+        }
+        for (final q in round.questions) {
+          expect(q.number, inInclusiveRange(11, 99));
+          for (final mode in SpeechMode.values) {
+            expect(q.options(mode).toSet().length, 4);
+            expect(q.options(mode), contains(q.answer(mode)));
+            if (q.category == ChallengeCategory.build) {
+              final tokens = q.tokens(mode);
+              final expected = mode == SpeechMode.placeValue
+                  ? NumberWords.placeValueParts(q.number)
+                  : [
+                      q.number % 10 == 1
+                          ? 'ein'
+                          : NumberWords.traditional(q.number % 10),
+                      'und',
+                      NumberWords.traditional(q.number ~/ 10 * 10),
+                    ];
+              expect(tokens.toSet(), expected.toSet());
+              expect(expected.join(), q.answer(mode));
+              expect(q.tokens(mode), tokens);
+            }
+            if (q.category == ChallengeCategory.addition) {
+              expect(q.leftOperand, isNotNull);
+              expect(q.leftOperand, greaterThan(0));
+              expect(q.rightOperand, greaterThan(0));
+              expect(q.leftOperand! + q.rightOperand, q.number);
+              expect(q.answer(mode), '${q.number}');
             }
           }
         }
       }
-    },
-  );
+    }
+  });
   test(
-    'accuracy beats speed; modes and categories have independent records',
+    'accuracy beats speed and only Zwanzigeins results create records',
     () async {
       final store = MemoryChallengeStore();
       var state = await ChallengeState.load(store);
       await state.record(result('a', correct: 9, ms: 9000));
       await state.record(result('b', correct: 8, ms: 100));
       await state.record(result('c', correct: 9, ms: 8000));
-      await state.record(result('d', mode: SpeechMode.placeValue));
+      await state.record(result('d', mode: SpeechMode.traditional));
       await state.record(result('e', category: ChallengeCategory.listen));
       await state.record(result('f', correct: 10, eligible: false));
       await state.record(result('f', correct: 10, eligible: false));
       state = await ChallengeState.load(store);
       expect(state.results.length, 6);
-      expect(state.bests.map((r) => r.id), ['c', 'd', 'e']);
+      expect(state.bests.map((r) => r.id), ['c', 'e']);
       await state.setMode(SpeechMode.placeValue);
       final encoded = jsonEncode(store.snapshot.toJson());
       final decoded = ChallengeSnapshot.fromJson(
         jsonDecode(encoded) as Map<String, dynamic>,
       );
       expect(decoded.preferredMode, SpeechMode.placeValue);
-      expect(decoded.bests.map((r) => r.id), ['c', 'd', 'e']);
+      expect(decoded.bests.map((r) => r.id), ['c', 'e']);
       await state.clearResults();
       expect(state.results, isEmpty);
       expect(state.bests, isEmpty);

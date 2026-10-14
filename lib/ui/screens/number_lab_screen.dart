@@ -100,14 +100,14 @@ class _NumberLabScreenState extends State<NumberLabScreen> {
                 'STELLENWERTGERECHT',
                 NumberWords.placeValue(_number),
                 SpeechMode.placeValue,
-                const Color(0xFFE8F3DD),
+                const Color(0xFFE7F8EE),
               ),
               const SizedBox(height: 12),
               _speechCard(
                 'TRADITIONELL',
                 NumberWords.traditional(_number),
                 SpeechMode.traditional,
-                const Color(0xFFEEEBFA),
+                const Color(0xFFE7F8EE),
               ),
               const SizedBox(height: 20),
               Text(

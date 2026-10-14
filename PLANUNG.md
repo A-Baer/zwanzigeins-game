@@ -2,7 +2,7 @@
 
 ## Produktidee und Umsetzungsplanung für eine gamifizierte Flutter-App
 
-Stand: 13. September 2026
+Stand: 26. September 2026
 
 ## Umsetzungsstand des MVP
 
@@ -24,11 +24,12 @@ personenbezogenen Vereinsdaten verarbeitet.
 ## Implementierte Vorbereitung des Challenge-Bereichs
 
 Der lokale Prototyp enthält jetzt die Navigation Challenges, Lernen, Ranglisten,
-Profil und Mehr. Spielbar sind zehnteilige Zahlenmix-Runden, die drei Kategorien
-Hören/Zahlwort-Zuordnung/Bausteine und Freundschaftsduelle nacheinander an einem
-Gerät. Beide Personen wählen ihre Sprechweise unabhängig; Aufgaben und Reihenfolge
-bleiben im Duell gleich. Lokale Einzelbestwerte, eine begrenzte Versuchshistorie
-und die bevorzugte Sprechweise werden getrennt vom Lernfortschritt gespeichert.
+Profil und Mehr. Spielbar sind zehnteilige Zahlenmix-Runden, die vier Kategorien
+Hören/Zahlwort-Zuordnung/Bausteine/Kopfrechnen und Freundschaftsduelle nacheinander
+an einem Gerät. In Duellen spricht Spieler 1 immer traditionell und Spieler 2 immer
+nach Zwanzigeins; Aufgaben und Reihenfolge bleiben gleich. Einzelrunden und
+Disziplinen laufen immer nach Zwanzigeins. Lokale Zwanzigeins-Bestwerte und eine
+begrenzte Versuchshistorie werden getrennt vom Lernfortschritt gespeichert.
 Texthilfe und Hintergrundwechsel schließen einen Bestwert aus. Geräteduelle zählen
 nicht als Einzelbestwerte. Die Baustein-Kategorie nutzt zunächst 21–99 ohne volle
 Zehner, die übrigen Kategorien 11–99.
@@ -45,14 +46,14 @@ implementiert. Der Lernbereich mit seinen sechs Stationen bleibt erhalten.
 Planungsänderung auf Nutzerwunsch: Die App besteht künftig aus zwei gleichwertigen
 Produkthälften. **Challenges sind der Hook und der zentrale Einstieg**, Lernen
 und Entdecken bilden die zweite Hälfte. Die App richtet sich damit auch an
-Menschen, die mit ihrer vertrauten traditionellen Sprechweise antreten möchten,
-ohne zuerst eine andere Zahlenreihenfolge zu lernen.
+Menschen, die die Unterschiede beider Sprechweisen im direkten Duell erleben
+möchten, ohne zuerst eine andere Zahlenreihenfolge zu lernen.
 
 Verbindlich gewünscht sind Duelle gegen andere Spieler mit zufällig gemischten
-Abfragearten, eine unabhängig je Spieler wählbare Sprechweise und kategorieweise
-Ranglisten für gewertete Einzelversuche. „Verdreht“ bezeichnet die traditionelle
-Sprechweise; „links nach rechts“ bezeichnet die stellenwertgerechte Sprechweise.
-Die Auswahl darf keinen Modus als falsch oder minderwertig darstellen.
+Abfragearten und festen Rollen: Spieler 1 spricht traditionell, Spieler 2 nach
+Zwanzigeins. Disziplinen, gewertete Einzelversuche und Ranglisten verwenden nur
+die Zwanzigeins-Sprechweise. Die traditionelle Sprechweise bleibt als Lern- und
+Vergleichsform sichtbar, erhält aber keine eigene Rangliste.
 
 Der oben beschriebene lokale Flutter-Prototyp ist der tatsächliche
 Implementierungsstand; Online-Konten, Online-Duelle, öffentliche Ranglisten
@@ -65,8 +66,9 @@ Die geplante App verbindet kurze Zahlen-Challenges gegen andere Spieler und
 kategorieweise Bestenlisten mit einem gleichwertigen Lern- und Entdeckungsbereich.
 Der Wettbewerb liefert den Anlass zum Einstieg und Wiederkommen; der Lernbereich
 hilft, Zahlenverständnis und beide Sprechweisen zu erkunden. Die stellenwertgerechte
-Zahlensprechweise wie „zwanzigeins“ ist eine frei wählbare Alternative zur
-traditionellen Form „einundzwanzig“, keine Zugangsvoraussetzung zum Wettbewerb.
+Zahlensprechweise wie „zwanzigeins“ bildet die gemeinsame Grundlage für
+Einzeldisziplinen und Ranglisten; im Duell wird sie direkt der traditionellen Form
+„einundzwanzig“ gegenübergestellt.
 
 Die App soll nicht behaupten, dass die traditionelle Sprechweise falsch sei oder abgeschafft werden müsse. Sie folgt der Haltung von Zwanzigeins e. V.: Beide Sprechweisen können nebeneinander bestehen. Die Nutzerinnen und Nutzer sollen den Unterschied selbst hören, sehen, ausprobieren und anhand ihrer eigenen Fortschritte erfahren.
 
@@ -106,8 +108,8 @@ Die App soll:
 6. den Verein und seine wissenschaftliche Arbeit seriös vorstellen,
 7. einen sicheren Weg zur Vereinsmitgliedschaft anbieten.
 8. aus einer gemeinsamen Codebasis auf Android, iOS, Web und Desktop funktionieren,
-9. Duelle mit zufälligen Abfragearten und unabhängiger Moduswahl ermöglichen,
-10. gewertete Einzelversuche und Bestenlisten je Abfragekategorie anbieten.
+9. Duelle mit zufälligen Abfragearten und festen Sprechrollen ermöglichen,
+10. gewertete Zwanzigeins-Einzelversuche und Bestenlisten je Abfragekategorie anbieten.
 
 Nicht vorgesehen sind im ersten Schritt:
 
@@ -254,7 +256,7 @@ Die App darf humorvoll sein, sollte aber weder traditionelle Sprecherinnen und S
 ### 6.1 Challenge-Schleife als Einstieg
 
 1. Ein Duell starten/annehmen oder eine Ranglistenkategorie wählen.
-2. Die eigene Sprechweise wählen und Regeln sowie Wertung vor dem Start sehen.
+2. Die feste Sprechweise beziehungsweise Duellrolle und die Wertung vor dem Start sehen.
 3. Eine kurze Runde mit standardisierten Aufgaben spielen.
 4. Das vom Server bestätigte Ergebnis, den Duellstatus oder die Platzierung sehen.
 5. Eine Revanche anbieten, eine weitere Kategorie testen oder passende Inhalte lernen.
@@ -340,15 +342,16 @@ Lernziel: Übertragung in alltagsnahe Situationen.
 
 ### 7.7 Kopfrechen-Reise
 
-Rechenaufgaben werden gezeigt oder vorgelesen. Das Ergebnis wird eingegeben oder gesprochen. Dieser Modus baut auf den Erfahrungen der bestehenden App auf und eignet sich für eine spätere Ausbaustufe.
+Im ersten Ausbau werden zwei Zahlen zwischen 1 und 98 addiert; die Summe liegt
+zwischen 11 und 99. Die Aufgabe wird gezeigt und das Ergebnis ausgewählt. Später
+können vorgelesene Aufgaben, freie Eingabe und weitere Rechenarten folgen.
 
 ### 7.8 Spieler-Challenges
 
 **Verbindlicher Umfang:** Zwei Spieler treten mit einem zufällig zusammengestellten
-Mix geeigneter Abfragearten gegeneinander an. Jeder wählt unabhängig
-„traditionell / verdreht“ oder „stellenwertgerecht / links nach rechts“.
-Die Auswahl gilt für die ganze Runde und wird vor der ersten Aufgabe gespeichert.
-Auch gemischte Duelle zwischen den beiden Modi sind ausdrücklich möglich.
+Mix geeigneter Abfragearten gegeneinander an. Die Rollen sind bewusst fest:
+Spieler 1 nutzt die traditionelle Sprechweise, Spieler 2 die Zwanzigeins-Sprechweise.
+Eine Modusauswahl ist nicht erforderlich.
 
 **Vorgeschlagener erster Ausbau, noch keine beschlossene Live-Architektur:**
 zeitversetzte 1-gegen-1-Duelle per Einladungscode/Link und über zufällige
@@ -367,13 +370,13 @@ Geeignete erste Abfragearten:
 
 - Zahl hören und Ziffern eingeben/auswählen (Hörspur),
 - Ziffern sehen und das passende Zahlwort wählen (Zahlwort-Zuordnung),
-- Wortbausteine passend zum gewählten Modus ordnen (Zahlenwerkstatt).
+- Wortbausteine passend zur festen Rolle ordnen (Zahlenwerkstatt),
+- zwei Zahlen im Kopf addieren (Kopfrechnen).
 
 Die bisherige Lernfrage „Welche Form ist stellenwertgerecht?“ wird nicht
-unverändert zum Duell: Sie würde die freie Moduswahl unterlaufen. Jede
-Wettbewerbsvariante benötigt ihre eigene fachlich geprüfte Antwortlogik.
-Spracherkennung, Kopfrechnen und Alltagsaufgaben folgen erst mit geeigneter
-Validierung und fairen Regeln für beide Modi.
+unverändert zum Duell: Sie würde eine Rolle bevorzugen. Jede Wettbewerbsvariante
+benötigt ihre eigene fachlich geprüfte Antwortlogik. Spracherkennung und
+Alltagsaufgaben folgen erst mit geeigneter Validierung und fairen Regeln.
 
 Zustände: erstellt → eingeladen/wartend → angenommen → in Bearbeitung →
 beide Ergebnisse bestätigt → abgeschlossen. Hinzu kommen abgelehnt, abgelaufen,
@@ -390,21 +393,20 @@ Training bleibt daneben jederzeit verfügbar. Nur vom Server bestätigte Versuch
 erscheinen in öffentlichen Ranglisten; pro Spieler zählt der beste gültige
 Versuch innerhalb des jeweiligen Wertungszeitraums.
 
-Eine Rangliste wird nicht nur nach Kategorie getrennt, sondern auch nach
-Sprechweise, Zahlbereich/Schwierigkeitsstufe, Eingabeart und Regelversion.
+Eine Rangliste wird nach Kategorie, Zahlbereich/Schwierigkeitsstufe, Eingabeart
+und Regelversion getrennt. Sie wertet ausschließlich Zwanzigeins-Versuche.
 Bei Hörabfragen gehört das standardisierte Audioprofil dazu. Zeiträume
-(z. B. Saison oder Gesamtwertung) müssen sichtbar sein. Eine übergreifende
-Ansicht beider Modi kann ergänzend angeboten werden, zeigt aber den Modus
-jedes Ergebnisses und darf nicht ungeprüft als fairer Leistungsvergleich gelten.
+(z. B. Saison oder Gesamtwertung) müssen sichtbar sein. Für die traditionelle
+Sprechweise wird keine Rangliste angeboten.
 
 **Wertungsvorschlag zur Erprobung:** zuerst Anzahl richtiger Antworten, dann
 Gesamtzeit; eine unbeantwortete Aufgabe zählt als falsch. Eine Zeitüberschreitung
 kann nicht durch Überspringen zu einer Bestzeit führen. Bei gleicher Wertung
 teilen Spieler den Rang. Punktedarstellung, Zeitlimit und Messgenauigkeit werden
 vor dem Online-MVP verbindlich definiert und versioniert. Die gemischten
-Spielerduelle verwenden eine gemeinsame, vorab sichtbare Regel trotz
-unterschiedlicher Sprechweisen; Ergebnisse sind kein wissenschaftlicher
-Wirksamkeitsnachweis einer Sprechweise.
+Spielerduelle verwenden eine gemeinsame, vorab sichtbare Regel mit den festen
+Sprechrollen; Ergebnisse sind kein wissenschaftlicher Wirksamkeitsnachweis einer
+Sprechweise.
 
 Neue Aufgaben pro Versuch müssen einem äquivalenten, getesteten Schwierigkeitsprofil
 folgen. Ein reiner Zufallsmix ohne kontrollierte Schwierigkeit ist für eine
@@ -529,7 +531,7 @@ Challenges | Lernen | Ranglisten | Profil | Mehr
 
 - gleichwertig sichtbare Zugänge „Gegen Spieler“ und „Kategorie testen“
 - Duell erstellen, Einladung annehmen, zufälligen Gegner finden
-- eigene Sprechweise vor jeder gewerteten Runde wählen
+- feste Rollen vor dem Duell klar anzeigen; Disziplinen starten mit Zwanzigeins
 - offene Duelle, Ergebnisse und Revanche
 - klarer Online-/Wartestatus; Zugang zum lokalen Lernen bei fehlender Verbindung
 
@@ -541,8 +543,9 @@ Challenges | Lernen | Ranglisten | Profil | Mehr
 
 ### Ranglisten
 
-- Kategorien und sichtbare Filter für Modus, Schwierigkeit und Zeitraum
+- Kategorien und sichtbare Filter für Schwierigkeit und Zeitraum
 - beste Spieler, eigene Position und eigener Bestwert
+- ausschließlich Zwanzigeins-Ergebnisse; keine traditionelle Rangliste
 - nur bestätigte Ergebnisse; laufende Prüfung transparent kennzeichnen
 - Direktstart eines gewerteten Versuchs mit den Regeln der gewählten Liste
 
@@ -824,7 +827,7 @@ Erforderliche Funktionen:
 
 - pseudonyme Spieleridentität, sichere Sitzungen, Kontowiederherstellung und Löschung,
 - Einladungscodes/Links, zufällige Gegnerzuordnung und Duell-Zustandsautomat,
-- versionierte Aufgabenvorlagen, serverseitige Erzeugung und gespeicherte Moduswahl,
+- versionierte Aufgabenvorlagen, serverseitige Erzeugung und feste Rollenvergabe,
 - authentifizierte, schrittweise Ausgabe von Aufgaben und Annahme von Antworten,
 - serverseitige Prüfung von Antworten, Reihenfolge, Fristen und Teilnehmerrechten,
 - atomarer Abschluss und idempotente Wiederholungsanfragen gegen Doppelwertungen,
@@ -833,7 +836,7 @@ Erforderliche Funktionen:
 - Melden, Blockieren, Namensmoderation und nachvollziehbare Korrektur falscher Scores.
 
 Ein erstes Datenmodell umfasst Spieler, Regelversionen, Kategorien, Duelle,
-Teilnahmen mit Sprechweise, Versuche, ausgegebene Aufgaben, Antworten und bestätigte
+Teilnahmen mit zugewiesener Sprechrolle, Versuche, ausgegebene Aufgaben, Antworten und bestätigte
 Ergebnisse. Ranglisten werden daraus abgeleitet; Lernfortschritt bleibt zunächst
 lokal und wird nicht automatisch Teil eines öffentlichen Profils.
 
@@ -938,13 +941,13 @@ Wettbewerbsvarianten mit wesentlich anderen Regeln erhalten eine eigene Wertung.
 
 ### Online-Abnahmekriterien
 
-- Zwei Spieler können dasselbe Duell jeweils in unterschiedlicher Sprechweise abschließen.
-- Jede freigegebene Abfrageart funktioniert fachlich korrekt in beiden Modi.
+- Spieler 1 kann dasselbe Duell traditionell und Spieler 2 nach Zwanzigeins abschließen.
+- Jede freigegebene Abfrageart funktioniert fachlich korrekt in ihrer vorgesehenen Rolle.
 - Einladungen, Gegnerzuordnung, fehlende Gegner, Ablehnung und Ablauf sind getestet.
 - Verbindungsabbruch, App-Neustart, Doppelsenden und gleichzeitiger Abschluss erzeugen keine Doppelwertung.
 - Antworten/Seeds künftiger Aufgaben und fremde private Daten werden nicht offengelegt.
 - Manipulierte Endscores, fremde Versuch-IDs und Antworten nach Frist werden abgewiesen.
-- Ranglisten trennen ihre Regelvarianten und zeigen die eigene Platzierung korrekt.
+- Ranglisten enthalten nur Zwanzigeins-Versuche und zeigen die eigene Platzierung korrekt.
 - Lernfortschritt bestehender Installationen bleibt erhalten; Offline-Lernen benötigt kein Konto.
 - Zeit-/Audiovergleichbarkeit wird auf iOS, Android und Web praktisch geprüft.
 - Löschung, Blockieren, Melden, Lasttests, Monitoring und Backup-Wiederherstellung sind überprüft.
@@ -984,7 +987,7 @@ nach Festlegung von Wertungsregeln, Kontokonzept und Backend.
 
 ### Phase 1: Lokaler Challenge-Prototyp
 
-- gemeinsame Aufgabenmodelle um beide Modi erweitern
+- gemeinsame Aufgabenmodelle für feste Duellrollen und Zwanzigeins-Disziplinen ausbauen
 - geeignete Abfragearten mit gemischten Runden und Kategorie-Einzeltraining bauen
 - Wertung und Feedback lokal testen; noch keine vermeintlich echte Online-Rangliste
 - bestehende Lernroute und gespeicherten Lernfortschritt erhalten
@@ -1017,11 +1020,11 @@ nach Festlegung von Wertungsregeln, Kontokonzept und Backend.
 Das erste vollständige Produkt mit Challenge-Hook umfasst:
 
 - eigenständige Flutter-App mit Challenge- und Lernbereich,
-- Zahlen 11–99 in beiden frei wählbaren Sprechweisen,
-- drei fachlich geeignete Wettbewerbs-Abfragearten (Hören, Zuordnen, Bausteine),
-- gemischte Duelle mit unabhängigem Modus je Spieler,
+- Zahlen 11–99 mit Zwanzigeins als fester Disziplin-Sprechweise,
+- vier Wettbewerbs-Abfragearten (Hören, Zuordnen, Bausteine, Addition),
+- gemischte Duelle mit Spieler 1 traditionell und Spieler 2 nach Zwanzigeins,
 - zeitversetzte Einladungsduelle und zufällige Gegnerzuordnung als Planungsvorschlag,
-- gewertete Einzelversuche und Bestenlisten je Kategorie und Regelvariante,
+- gewertete Zwanzigeins-Einzelversuche und Bestenlisten je Kategorie und Regelvariante,
 - pseudonyme Online-Identität und serverseitig geprüfte Wertung,
 - sechs vorhandene Lernstationen, freies Üben und Zahlenlabor als lokale Grundlage,
 - privater Lernfortschritt, Zahlenmuseum und Vereinsinformationen,
@@ -1033,7 +1036,7 @@ Bewusst spätere Funktionen:
 
 - Live-Duelle, Chat und komplexe soziale Netzwerke,
 - Sprechstudio/Spracherkennung im gewerteten Wettbewerb,
-- Kopfrechnen, große Zahlen und besondere Zahlwortarten,
+- weitere Rechenarten, große Zahlen und besondere Zahlwortarten,
 - Lehrkraftmodus und Cloud-Synchronisierung des Lernfortschritts,
 - vollständig digitaler Mitgliedsantrag,
 - umfangreiche oder wissenschaftliche Datenerhebung,
