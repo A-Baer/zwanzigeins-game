@@ -60,15 +60,21 @@ if [[ ! -x "$FLUTTER_PATH/bin/flutter" ]]; then
 fi
 [[ "$(stat -c '%U:%G' "$FLUTTER_PATH")" == "$DEPLOY_USER:$DEPLOY_USER" ]] \
     || fail "Flutter SDK must be owned by $DEPLOY_USER."
-runuser -u "$DEPLOY_USER" -- env -u ANDROID_HOME -u ANDROID_SDK_ROOT \
-    HOME="$DEPLOY_HOME" USER="$DEPLOY_USER" LOGNAME="$DEPLOY_USER" \
-    FLUTTER_SUPPRESS_ANALYTICS=true \
-    "$FLUTTER_PATH/bin/flutter" precache --web
-installed_flutter_version=$(runuser -u "$DEPLOY_USER" -- env -u ANDROID_HOME -u ANDROID_SDK_ROOT \
-    HOME="$DEPLOY_HOME" USER="$DEPLOY_USER" LOGNAME="$DEPLOY_USER" \
-    FLUTTER_SUPPRESS_ANALYTICS=true \
-    "$FLUTTER_PATH/bin/flutter" --version --machine \
-    | sed -n 's/.*"frameworkVersion":"\([^"]*\)".*/\1/p')
+(
+    cd "$DEPLOY_HOME"
+    runuser -u "$DEPLOY_USER" -- env -u ANDROID_HOME -u ANDROID_SDK_ROOT \
+        HOME="$DEPLOY_HOME" USER="$DEPLOY_USER" LOGNAME="$DEPLOY_USER" \
+        FLUTTER_SUPPRESS_ANALYTICS=true \
+        "$FLUTTER_PATH/bin/flutter" precache --web
+)
+installed_flutter_version=$(
+    cd "$DEPLOY_HOME"
+    runuser -u "$DEPLOY_USER" -- env -u ANDROID_HOME -u ANDROID_SDK_ROOT \
+        HOME="$DEPLOY_HOME" USER="$DEPLOY_USER" LOGNAME="$DEPLOY_USER" \
+        FLUTTER_SUPPRESS_ANALYTICS=true \
+        "$FLUTTER_PATH/bin/flutter" --version --machine \
+        | sed -n 's/.*"frameworkVersion":"\([^"]*\)".*/\1/p'
+)
 [[ "$installed_flutter_version" == "$FLUTTER_VERSION" ]] \
     || fail 'Installed Flutter version does not match the pinned version.'
 
