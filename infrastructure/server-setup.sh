@@ -22,6 +22,8 @@ fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 [[ "${ID:-}" == ubuntu && "${VERSION_ID:-}" == 24.04 ]] || fail 'Only Ubuntu 24.04 LTS is supported.'
 [[ "$(dpkg --print-architecture)" == amd64 ]] || fail 'Only amd64 is supported.'
 id "$DEPLOY_USER" >/dev/null 2>&1 || fail "Required deployment user does not exist: $DEPLOY_USER"
+DEPLOY_HOME=$(getent passwd "$DEPLOY_USER" | cut -d: -f6)
+[[ -n "$DEPLOY_HOME" && -d "$DEPLOY_HOME" ]] || fail "Deployment user has no usable home directory: $DEPLOY_USER"
 for command_name in curl git nginx sha256sum tar xz; do
     command -v "$command_name" >/dev/null || fail "Required command is missing: $command_name"
 done
@@ -58,9 +60,13 @@ if [[ ! -x "$FLUTTER_PATH/bin/flutter" ]]; then
 fi
 [[ "$(stat -c '%U:%G' "$FLUTTER_PATH")" == "$DEPLOY_USER:$DEPLOY_USER" ]] \
     || fail "Flutter SDK must be owned by $DEPLOY_USER."
-runuser -u "$DEPLOY_USER" -- env FLUTTER_SUPPRESS_ANALYTICS=true \
+runuser -u "$DEPLOY_USER" -- env -u ANDROID_HOME -u ANDROID_SDK_ROOT \
+    HOME="$DEPLOY_HOME" USER="$DEPLOY_USER" LOGNAME="$DEPLOY_USER" \
+    FLUTTER_SUPPRESS_ANALYTICS=true \
     "$FLUTTER_PATH/bin/flutter" precache --web
-installed_flutter_version=$(runuser -u "$DEPLOY_USER" -- env FLUTTER_SUPPRESS_ANALYTICS=true \
+installed_flutter_version=$(runuser -u "$DEPLOY_USER" -- env -u ANDROID_HOME -u ANDROID_SDK_ROOT \
+    HOME="$DEPLOY_HOME" USER="$DEPLOY_USER" LOGNAME="$DEPLOY_USER" \
+    FLUTTER_SUPPRESS_ANALYTICS=true \
     "$FLUTTER_PATH/bin/flutter" --version --machine \
     | sed -n 's/.*"frameworkVersion":"\([^"]*\)".*/\1/p')
 [[ "$installed_flutter_version" == "$FLUTTER_VERSION" ]] \
